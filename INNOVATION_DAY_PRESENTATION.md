@@ -100,15 +100,7 @@ graph TB
 
 ---
 
-## 📊 **Slide 4: Key Technical Innovations**
-
-### 🔍 **Key Technical Innovations**
-- **Dynamic Schema Processing**: Handles variable data structure complexity
-- **Intelligent Entity Grouping**: Automatic test data organization
-- **Error Resilience**: Multiple fallback strategies for data validation
-- **Expression Optimization**: Efficient Logic Apps expressions for complex data
-
-## 💼 **Slide 5: Business Value & ROI**
+## 💼 **Slide 4: Business Value & ROI**
 
 ### 📈 **Quantifiable Benefits**
 - **Time Savings**: Reduction in test data preparation time
