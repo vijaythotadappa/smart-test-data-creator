@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant User as User/AI Agent
+    participant LogicApp as Azure Logic App
+    participant OAuth as OAuth Service
+    participant TerminalAPI as Terminal API
+    participant PSS as PSS System
+    
+    User->>LogicApp: POST /workflows/CallTerminalAPINew/triggers/manual/invoke
+    Note over User,LogicApp: Multi-passenger booking request with JSON payload
+    
+    LogicApp->>OAuth: Request access token
+    Note over LogicApp,OAuth: Client credentials flow
+    OAuth-->>LogicApp: Return access token
+    
+    LogicApp->>LogicApp: Process_Passengers Action
+    Note over LogicApp: Normalize passenger array structure
+    
+    LogicApp->>LogicApp: Compose_Terminal_API_Request
+    Note over LogicApp: Create dynamic Passenger and Passenger2 groups
+    
+    LogicApp->>TerminalAPI: POST /api/terminal
+    Note over LogicApp,TerminalAPI: Send formatted request with auth token
+    
+    TerminalAPI->>PSS: Execute PSS.RevenueCashLongSell script
+    Note over TerminalAPI,PSS: Process booking with passenger groups
+    
+    PSS-->>TerminalAPI: Return booking result
+    Note over PSS,TerminalAPI: PNR creation confirmation or error
+    
+    TerminalAPI-->>LogicApp: HTTP 200 response
+    Note over TerminalAPI,LogicApp: Booking confirmation with details
+    
+    LogicApp->>LogicApp: Handle_API_Response
+    Note over LogicApp: Format success/error response
+    
+    LogicApp-->>User: Return formatted response
+    Note over LogicApp,User: Success confirmation or error details

@@ -1,0 +1,30 @@
+graph TD
+    subgraph "Dynamic Passenger Assignment Logic"
+        Start[Start: Passenger Array] --> CheckFirst{First Passenger<br/>Exists?}
+        CheckFirst -->|Yes| AssignP1["Passenger = {<br/>  FirstName: @{items('Apply_to_each')?['firstName']}<br/>  LastName: @{items('Apply_to_each')?['lastName']}<br/>  Gender: @{items('Apply_to_each')?['gender']}<br/>}"]
+        
+        CheckFirst -->|No| Skip1[Skip Passenger Assignment]
+        
+        AssignP1 --> CheckSecond{Second Passenger<br/>Exists?}
+        CheckSecond -->|Yes| AssignP2["Passenger2 = {<br/>  FirstName: @{body('Process_Passengers')[1]['firstName']}<br/>  LastName: @{body('Process_Passengers')[1]['lastName']}<br/>  Gender: @{body('Process_Passengers')[1]['gender']}<br/>}"]
+        
+        CheckSecond -->|No| Skip2[Skip Passenger2 Assignment]
+        
+        AssignP2 --> Complete[Complete Request Object]
+        Skip1 --> Complete
+        Skip2 --> Complete
+    end
+    
+    subgraph "Expression Evaluation"
+        Complete --> Eval1[["@{items('Apply_to_each')?['firstName']}"<br/>Evaluates to actual value]]
+        Complete --> Eval2[["@{body('Process_Passengers')[1]['lastName']}"<br/>Evaluates to actual value]]
+    end
+    
+    %% Styling
+    classDef logic fill:#e8f5e8
+    classDef assign fill:#e3f2fd
+    classDef eval fill:#fff3e0
+    
+    class Start,CheckFirst,CheckSecond logic
+    class AssignP1,AssignP2,Skip1,Skip2 assign
+    class Complete,Eval1,Eval2 eval

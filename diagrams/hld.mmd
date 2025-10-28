@@ -1,0 +1,50 @@
+graph TB
+    %% User Interface Layer
+    subgraph "User Interface Layer"
+        AI[AI Agent/Copilot]
+        USER[User Input]
+    end
+    
+    %% Integration Layer
+    subgraph "Integration Layer"
+        LA[Azure Logic App<br/>CallTerminalAPINew]
+        AUTH[OAuth 2.0<br/>Token Service]
+    end
+    
+    %% Business Logic Layer
+    subgraph "Business Logic Layer"
+        PP[Process_Passengers<br/>Action]
+        CTR[Compose_Terminal_API_Request<br/>Action]
+        HAR[Handle_API_Response<br/>Action]
+    end
+    
+    %% External Services
+    subgraph "External Services"
+        TAPI[Terminal API<br/>PSS.RevenueCashLongSell]
+        PSS[PSS System<br/>Passenger Service System]
+    end
+    
+    %% Data Flow
+    USER --> AI
+    AI --> |HTTP POST Request<br/>Multi-Passenger Data| LA
+    LA --> |Client Credentials| AUTH
+    AUTH --> |Access Token| LA
+    LA --> PP
+    PP --> |Passenger Array Processing| CTR
+    CTR --> |Terminal API Request| TAPI
+    TAPI --> |Execute Script| PSS
+    PSS --> |PNR Creation Result| TAPI
+    TAPI --> |Response| HAR
+    HAR --> |JSON Response| AI
+    AI --> |Booking Confirmation| USER
+    
+    %% Styling
+    classDef userLayer fill:#e1f5fe
+    classDef integrationLayer fill:#f3e5f5
+    classDef businessLayer fill:#e8f5e8
+    classDef externalLayer fill:#fff3e0
+    
+    class AI,USER userLayer
+    class LA,AUTH integrationLayer
+    class PP,CTR,HAR businessLayer
+    class TAPI,PSS externalLayer

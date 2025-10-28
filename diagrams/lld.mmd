@@ -1,0 +1,37 @@
+flowchart TD
+    Start([Workflow Trigger]) --> Auth[Get OAuth Token]
+    Auth --> ProcessPass[Process_Passengers Action]
+    
+    ProcessPass --> CheckArray{Is passengers<br/>an array?}
+    CheckArray -->|Yes| NormalizeArray[Keep as array]
+    CheckArray -->|No| WrapArray[Wrap in array]
+    
+    NormalizeArray --> ComposeReq[Compose_Terminal_API_Request]
+    WrapArray --> ComposeReq
+    
+    ComposeReq --> CheckCount{Passenger count?}
+    CheckCount -->|1 passenger| SingleGroup[Create Passenger group only]
+    CheckCount -->|2+ passengers| MultiGroup[Create Passenger + Passenger2 groups]
+    
+    SingleGroup --> CallAPI[Call Terminal API]
+    MultiGroup --> CallAPI
+    
+    CallAPI --> CheckResponse{API Response?}
+    CheckResponse -->|Success| HandleSuccess[Handle_API_Response Success]
+    CheckResponse -->|Error| HandleError[Handle_API_Response Error]
+    
+    HandleSuccess --> FormatSuccess[Format success response]
+    HandleError --> FormatError[Format error response]
+    
+    FormatSuccess --> End([Return Response])
+    FormatError --> End
+    
+    %% Styling
+    classDef startEnd fill:#e1f5fe
+    classDef process fill:#e8f5e8
+    classDef decision fill:#fff3e0
+    classDef error fill:#ffebee
+    
+    class Start,End startEnd
+    class Auth,ProcessPass,ComposeReq,CallAPI,HandleSuccess,HandleError,FormatSuccess,FormatError process
+    class CheckArray,CheckCount,CheckResponse decision

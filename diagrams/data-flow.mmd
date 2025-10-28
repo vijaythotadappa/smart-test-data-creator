@@ -1,0 +1,26 @@
+graph LR
+    subgraph "Input Data"
+        Input["{<br/>  'passengers': [<br/>    {<br/>      'firstName': 'John',<br/>      'lastName': 'Doe',<br/>      'gender': 'M'<br/>    },<br/>    {<br/>      'firstName': 'Jane',<br/>      'lastName': 'Smith',<br/>      'gender': 'F'<br/>    }<br/>  ]<br/>}"]
+    end
+    
+    subgraph "Processing"
+        Normalize[Normalize Array<br/>Process_Passengers]
+        Transform[Transform Structure<br/>Compose_Terminal_API_Request]
+    end
+    
+    subgraph "Output Data"
+        Output["{<br/>  'Passenger': {<br/>    'FirstName': 'John',<br/>    'LastName': 'Doe',<br/>    'Gender': 'M'<br/>  },<br/>  'Passenger2': {<br/>    'FirstName': 'Jane',<br/>    'LastName': 'Smith',<br/>    'Gender': 'F'<br/>  }<br/>}"]
+    end
+    
+    Input --> Normalize
+    Normalize --> Transform
+    Transform --> Output
+    
+    %% Styling
+    classDef inputStyle fill:#e3f2fd
+    classDef processStyle fill:#e8f5e8
+    classDef outputStyle fill:#fff3e0
+    
+    class Input inputStyle
+    class Normalize,Transform processStyle
+    class Output outputStyle
