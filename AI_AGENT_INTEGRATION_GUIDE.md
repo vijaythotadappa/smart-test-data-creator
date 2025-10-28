@@ -143,9 +143,6 @@ SUPPORTED FARE CLASSES:
 
 SUPPORTED AIRLINES (airlineCode):
 - "AA" → American Airlines (default)
-- "UA" → United Airlines  
-- "DL" → Delta Airlines
-- etc.
 
 SUPPORTED ANCILLARIES:
 - "SEAT" → Seat selection
@@ -210,7 +207,7 @@ TEST ENVIRONMENT NOTES:
       },
       "phone": {"type": "string"},
       "departureDate": {"type": "string", "description": "Format: DDMMM"},
-      "airlineCode": {"type": "string", "description": "AA, UA, DL, etc."},
+      "airlineCode": {"type": "string", "description": "AA"},
       "ancillaries": {
         "type": "array",
         "items": {"type": "string"},

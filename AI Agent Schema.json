@@ -1,0 +1,209 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "version": "1.0.0.0",
+        "title": "Smart Test Data Creator",
+        "description": "Creates PSS test data by booking flights through Terminal API. Supports single and multi-passenger bookings with natural language input."
+    },
+    "servers": [
+        {
+            "url": "https://prod-53.eastus2.logic.azure.com/workflows/844446e14eec415cbc20eeaa82fcd069/triggers/When_a_HTTP_request_is_received/paths"
+        }
+    ],
+    "security": [
+        {
+            "sig": []
+        }
+    ],
+    "paths": {
+        "/invoke": {
+            "post": {
+                "description": "Creates PSS test data by booking flights through Terminal API. Supports single and multi-passenger bookings with flexible input parameters.",
+                "operationId": "create-pss-test-data",
+                "parameters": [
+                    {
+                        "name": "api-version",
+                        "in": "query",
+                        "description": "`2016-10-01` is the most common generally available version",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "2016-10-01"
+                        },
+                        "example": "2016-10-01"
+                    },
+                    {
+                        "name": "sv",
+                        "in": "query",
+                        "description": "The version number",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "1.0"
+                        },
+                        "example": "1.0"
+                    },
+                    {
+                        "name": "sp",
+                        "in": "query",
+                        "description": "The permissions",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun"
+                        },
+                        "example": "%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful flight booking response with PNR details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "description": "Whether the booking was successful"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "description": "Booking response data including PNR"
+                                        },
+                                        "statusCode": {
+                                            "type": "integer",
+                                            "description": "HTTP status code"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "object",
+                                            "description": "Error details"
+                                        },
+                                        "statusCode": {
+                                            "type": "integer",
+                                            "description": "HTTP status code"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "deprecated": false,
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "origin": {
+                                        "type": "string",
+                                        "description": "Origin airport code (e.g., DFW)"
+                                    },
+                                    "destination": {
+                                        "type": "string",
+                                        "description": "Destination airport code (e.g., LAX)"
+                                    },
+                                    "passengerCount": {
+                                        "type": "integer",
+                                        "description": "Number of passengers"
+                                    },
+                                    "fareClass": {
+                                        "type": "string",
+                                        "description": "Fare class (Economy, Business, First)"
+                                    },
+                                    "passengers": {
+                                        "type": "array",
+                                        "description": "Array of passenger objects for multi-passenger bookings",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "firstName": {
+                                                    "type": "string",
+                                                    "description": "Passenger first name"
+                                                },
+                                                "lastName": {
+                                                    "type": "string",
+                                                    "description": "Passenger last name"
+                                                },
+                                                "middleName": {
+                                                    "type": "string",
+                                                    "description": "Passenger middle name (optional)"
+                                                },
+                                                "gender": {
+                                                    "type": "string",
+                                                    "description": "M or F (optional)"
+                                                },
+                                                "dob": {
+                                                    "type": "string",
+                                                    "description": "Date of birth DDMMMYY format (optional)"
+                                                },
+                                                "phone": {
+                                                    "type": "string",
+                                                    "description": "Contact phone (optional)"
+                                                }
+                                            },
+                                            "required": [
+                                                "firstName",
+                                                "lastName"
+                                            ]
+                                        }
+                                    },
+                                    "firstName": {
+                                        "type": "string",
+                                        "description": "Primary passenger first name (for single passenger)"
+                                    },
+                                    "lastName": {
+                                        "type": "string",
+                                        "description": "Primary passenger last name (for single passenger)"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "description": "Contact phone number"
+                                    },
+                                    "departureDate": {
+                                        "type": "string",
+                                        "description": "Departure date (optional, defaults to tomorrow)"
+                                    },
+                                    "environment": {
+                                        "type": "string",
+                                        "description": "Environment (TSTS, CERT, PROD)"
+                                    }
+                                },
+                                "required": [
+                                    "origin",
+                                    "destination",
+                                    "passengerCount",
+                                    "fareClass"
+                                ]
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sig": {
+                "type": "apiKey",
+                "description": "The SHA 256 hash of the entire request URI with an internal key.",
+                "name": "sig",
+                "in": "query"
+            }
+        }
+    }
+}
