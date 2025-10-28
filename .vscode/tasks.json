@@ -1,0 +1,135 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "logicAppName",
+            "description": "Logic App resource name in Azure",
+            "default": "my-terminal-api-logic-app",
+            "type": "promptString"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "Java: Build",
+            "type": "shell",
+            "command": "./mvnw.cmd",
+            "args": [
+                "clean",
+                "compile"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/java-app"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Java: Test",
+            "type": "shell",
+            "command": "./mvnw.cmd",
+            "args": [
+                "test"
+            ],
+            "group": "test",
+            "options": {
+                "cwd": "${workspaceFolder}/java-app"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Java: Run",
+            "type": "shell",
+            "command": "./mvnw.cmd",
+            "args": [
+                "exec:java"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/java-app"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Logic Apps: Install Functions Core Tools",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "install",
+                "-g",
+                "azure-functions-core-tools@4",
+                "--unsafe-perm",
+                "true"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Logic Apps: Start Local",
+            "type": "shell",
+            "command": "func",
+            "args": [
+                "start"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/logic-apps"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "problemMatcher": [],
+            "isBackground": true
+        },
+        {
+            "label": "Logic Apps: Initialize Project",
+            "type": "shell",
+            "command": "func",
+            "args": [
+                "init",
+                ".",
+                "--worker-runtime",
+                "node",
+                "--language",
+                "javascript"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}/logic-apps"
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

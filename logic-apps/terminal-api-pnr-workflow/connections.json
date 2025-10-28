@@ -1,0 +1,17 @@
+{
+    "managedApiConnections": {},
+    "serviceProviderConnections": {
+        "terminalApiConnection": {
+            "parameterValues": {
+                "clientId": "@appsetting('TERMINAL_API_CLIENT_ID')",
+                "clientSecret": "@appsetting('TERMINAL_API_CLIENT_SECRET')",
+                "tokenUrl": "@appsetting('TERMINAL_API_TOKEN_URL')",
+                "baseUrl": "@appsetting('TERMINAL_API_BASE_URL')"
+            },
+            "serviceProvider": {
+                "id": "/subscriptions/{subscription-id}/providers/Microsoft.Web/locations/{location}/managedApis/http"
+            },
+            "displayName": "Terminal API OAuth Connection"
+        }
+    }
+}

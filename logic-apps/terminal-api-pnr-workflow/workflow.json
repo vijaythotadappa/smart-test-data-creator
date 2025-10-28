@@ -1,0 +1,410 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+            "terminal_api_client_id": {
+                "type": "string",
+                "defaultValue": "@appsetting('TERMINAL_API_CLIENT_ID')"
+            },
+            "terminal_api_client_secret": {
+                "type": "securestring",
+                "defaultValue": "@appsetting('TERMINAL_API_CLIENT_SECRET')"
+            },
+            "terminal_api_token_url": {
+                "type": "string",
+                "defaultValue": "@appsetting('TERMINAL_API_TOKEN_URL')"
+            },
+            "terminal_api_base_url": {
+                "type": "string",
+                "defaultValue": "@appsetting('TERMINAL_API_BASE_URL')"
+            }
+        },
+        "triggers": {
+            "manual": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "origin": {
+                                "type": "string",
+                                "description": "Origin airport code (e.g., DFW)"
+                            },
+                            "destination": {
+                                "type": "string",
+                                "description": "Destination airport code (e.g., LAX)"
+                            },
+                            "passengerCount": {
+                                "type": "integer",
+                                "description": "Number of passengers"
+                            },
+                            "fareClass": {
+                                "type": "string",
+                                "description": "Fare class (e.g., Economy, Business, First)"
+                            },
+                            "ancillaries": {
+                                "type": "array",
+                                "description": "Array of ancillary services",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "environment": {
+                                "type": "string",
+                                "description": "Environment (CERT, PROD)",
+                                "default": "CERT"
+                            },
+                            "city": {
+                                "type": "string",
+                                "description": "City code",
+                                "default": "DFW"
+                            },
+                            "dutyCode": {
+                                "type": "string",
+                                "description": "Duty code",
+                                "default": "5"
+                            },
+                            "suffix": {
+                                "type": "string",
+                                "description": "Suffix",
+                                "default": "AAO"
+                            },
+                            "agentId": {
+                                "type": "string",
+                                "description": "Agent ID",
+                                "default": "827335"
+                            },
+                            "passcode": {
+                                "type": "string",
+                                "description": "Current passcode",
+                                "default": "PHX12345"
+                            },
+                            "scriptName": {
+                                "type": "string",
+                                "description": "Script name to execute",
+                                "default": "TESTS.PSSTest"
+                            }
+                        },
+                        "required": [
+                            "origin",
+                            "destination",
+                            "passengerCount",
+                            "fareClass"
+                        ]
+                    }
+                }
+            }
+        },
+        "actions": {
+            "Get_OAuth_Token": {
+                "type": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "uri": "@parameters('terminal_api_token_url')",
+                    "headers": {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    "body": "grant_type=client_credentials&client_id=@{parameters('terminal_api_client_id')}&client_secret=@{parameters('terminal_api_client_secret')}&scope="
+                },
+                "runAfter": {}
+            },
+            "Parse_Token_Response": {
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('Get_OAuth_Token')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "type": "string"
+                            },
+                            "token_type": {
+                                "type": "string"
+                            },
+                            "expires_in": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Get_OAuth_Token": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Compose_Terminal_API_Request": {
+                "type": "Compose",
+                "inputs": {
+                    "Parameters": {
+                        "group": [
+                            {
+                                "name": "Connection",
+                                "property": [
+                                    {
+                                        "name": "Environment",
+                                        "value": "@{coalesce(toUpper(triggerBody()?['environment']), 'TSTS')}"
+                                    },
+                                    {
+                                        "name": "Suffix",
+                                        "value": "@{coalesce(triggerBody()?['suffix'], 'AAO')}"
+                                    },
+                                    {
+                                        "name": "DutyCode",
+                                        "value": "@{coalesce(triggerBody()?['dutyCode'], '5')}"
+                                    },
+                                    {
+                                        "name": "Id",
+                                        "value": "@{coalesce(triggerBody()?['agentId'], '827335')}"
+                                    },
+                                    {
+                                        "name": "CurrentPasscode",
+                                        "value": "@{coalesce(triggerBody()?['passcode'], 'PHX12345')}"
+                                    },
+                                    {
+                                        "name": "City",
+                                        "value": "@{coalesce(triggerBody()?['city'], 'DFW')}"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Flight",
+                                "property": [
+                                    {
+                                        "name": "AirlineCode",
+                                        "value": "@{coalesce(triggerBody()?['airlineCode'], 'AA')}"
+                                    },
+                                    {
+                                        "name": "DepartureDate",
+                                        "value": "@{coalesce(toUpper(triggerBody()?['departureDate']), toUpper(formatDateTime(addDays(utcNow(), 1), 'ddMMM')))}"
+                                    },
+                                    {
+                                        "name": "Origin",
+                                        "value": "@{toUpper(triggerBody()?['origin'])}"
+                                    },
+                                    {
+                                        "name": "Destination",
+                                        "value": "@{toUpper(triggerBody()?['destination'])}"
+                                    },
+                                    {
+                                        "name": "Status",
+                                        "value": "@{coalesce(triggerBody()?['status'], 'OB')}"
+                                    },
+                                    {
+                                        "name": "ClassOfService",
+                                        "value": "@{if(equals(toUpper(triggerBody()?['fareClass']), 'BUSINESS'), 'C', 'Y')}"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Options",
+                                "property": [
+                                    {
+                                        "name": "FareType",
+                                        "value": "@{coalesce(triggerBody()?['fareType'], 'WP')}"
+                                    },
+                                    {
+                                        "name": "Ticketed",
+                                        "value": "@{coalesce(triggerBody()?['ticketed'], 'TRUE')}"
+                                    },
+                                    {
+                                        "name": "AssignSeats",
+                                        "value": "@{if(contains(string(triggerBody()?['ancillaries']), 'SEAT'), 'TRUE', 'FALSE')}"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Passenger",
+                                "property": [
+                                    {
+                                        "name": "FirstName",
+                                        "value": "@{coalesce(toUpper(triggerBody()?['firstName']), 'VIJI')}"
+                                    },
+                                    {
+                                        "name": "LastName",
+                                        "value": "@{coalesce(toUpper(triggerBody()?['lastName']), 'RAMA')}"
+                                    },
+                                    {
+                                        "name": "MiddleName",
+                                        "value": "@{coalesce(toUpper(triggerBody()?['middleName']), 'D')}"
+                                    },
+                                    {
+                                        "name": "Gender",
+                                        "value": "@{coalesce(triggerBody()?['gender'], 'F')}"
+                                    },
+                                    {
+                                        "name": "DOB",
+                                        "value": "@{coalesce(triggerBody()?['dob'], '01JAN80')}"
+                                    },
+                                    {
+                                        "name": "ContactPhone",
+                                        "value": "@{coalesce(triggerBody()?['phone'], '6023004759')}"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "@@(includeCollection)",
+                                "property": [
+                                    {
+                                        "name": "actionAdapterLog",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "variables",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "engineLog",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "actionAdapterLogSerialized",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "engineLogSerialized",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "systemVariables",
+                                        "value": "false"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "@@(exception)",
+                                "property": [
+                                    {
+                                        "name": "stackTraceIsEnabled",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "name": "innerExceptionIsEnabled",
+                                        "value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "ScriptName": "@{coalesce(triggerBody()?['scriptName'], 'PSS.RevenueCashLongSell')}"
+                },
+                "runAfter": {
+                    "Parse_Token_Response": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Call_Terminal_API": {
+                "type": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "uri": "@{parameters('terminal_api_base_url')}/api/terminalapi/api/ExecuteScript",
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer @{body('Parse_Token_Response')?['access_token']}"
+                    },
+                    "body": "@outputs('Compose_Terminal_API_Request')"
+                },
+                "runAfter": {
+                    "Compose_Terminal_API_Request": [
+                        "Succeeded"
+                    ]
+                }
+            },
+            "Handle_API_Response": {
+                "type": "If",
+                "expression": {
+                    "and": [
+                        {
+                            "greater": [
+                                "@outputs('Call_Terminal_API')['statusCode']",
+                                199
+                            ]
+                        },
+                        {
+                            "less": [
+                                "@outputs('Call_Terminal_API')['statusCode']",
+                                300
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "Success_Response": {
+                        "type": "Response",
+                        "inputs": {
+                            "statusCode": "@outputs('Call_Terminal_API')['statusCode']",
+                            "headers": {
+                                "Content-Type": "application/json"
+                            },
+                            "body": {
+                                "success": true,
+                                "timestamp": "@utcNow()",
+                                "requestId": "@workflow().run.name",
+                                "data": "@body('Call_Terminal_API')",
+                                "inputData": {
+                                    "origin": "@triggerBody()?['origin']",
+                                    "destination": "@triggerBody()?['destination']",
+                                    "passengerCount": "@triggerBody()?['passengerCount']",
+                                    "fareClass": "@triggerBody()?['fareClass']",
+                                    "ancillaries": "@triggerBody()?['ancillaries']"
+                                }
+                            }
+                        }
+                    }
+                },
+                "else": {
+                    "actions": {
+                        "Error_Response": {
+                            "type": "Response",
+                            "inputs": {
+                                "statusCode": "@coalesce(outputs('Call_Terminal_API')['statusCode'], 500)",
+                                "headers": {
+                                    "Content-Type": "application/json"
+                                },
+                                "body": {
+                                    "success": false,
+                                    "timestamp": "@utcNow()",
+                                    "requestId": "@workflow().run.name",
+                                    "error": {
+                                        "code": "@coalesce(outputs('Call_Terminal_API')['statusCode'], 500)",
+                                        "message": "Terminal API call failed",
+                                        "details": "@body('Call_Terminal_API')"
+                                    },
+                                    "inputData": {
+                                        "origin": "@triggerBody()?['origin']",
+                                        "destination": "@triggerBody()?['destination']",
+                                        "passengerCount": "@triggerBody()?['passengerCount']",
+                                        "fareClass": "@triggerBody()?['fareClass']",
+                                        "ancillaries": "@triggerBody()?['ancillaries']"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Call_Terminal_API": [
+                        "Succeeded",
+                        "Failed"
+                    ]
+                }
+            }
+        },
+        "outputs": {}
+    },
+    "kind": "Stateless"
+}
