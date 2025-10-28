@@ -2,6 +2,16 @@
 
 **Revolutionizing PSS Integration with Intelligent Data Generation & AI Agents**
 
+## **Team Member**
+
+Jason Gammage
+vijitha banda
+cynthia castillo
+Bridgett Walter
+Vijay Thotadappa Narasimhaiah
+Abdirazak Abdullahi
+Cody Treon
+Greg Huntington
 ---
 
 ## 📋 **Slide 1: Executive Summary**
