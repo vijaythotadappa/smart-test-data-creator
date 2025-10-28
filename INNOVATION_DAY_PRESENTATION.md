@@ -16,7 +16,7 @@
 - ✅ **AI Agent Integration**: Natural language test data specification
 - ✅ **Flexible Schema Support**: Adaptable to any PSS data structure
 - ✅ **OAuth 2.0 Security**: Enterprise-grade authentication
-- ✅ **Error Resilience**: Comprehensive validation and error handling
+- ✅ **Resilience**: Comprehensive validation and error handling
 
 ---
 
